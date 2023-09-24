@@ -142,6 +142,51 @@ You can change the dashboard language in the settings page (`/setting`) after th
   <img src="https://avatars.githubusercontent.com/u/64313711?v=4" width="50;" alt="玖叁"/>
 </a><!--GAMFC_DELIMITER_END-->
 
-## Star History
+5、获取 Github的 Client ID 和密钥
 
-[![Star History Chart](https://api.star-history.com/svg?repos=naiba/nezha&type=Timeline)](https://star-history.com/#naiba/nezha&Timeline)
+登录Github账号，然后打开此链接：https://github.com/settings/developers
+点击新的OAuth应用程序——自定义一个名称——主页网址输入：http://你的域名——授权回调地址输入：http://你的域名/oauth2/callback（注：你的域名部分替换为前面解析好的域名）——点击注册申请——成功后把对应的Client ID保存下来
+点击生成新的客户端密钥——生成后，把对应的密钥复制出来保存
+6、安装Dashboard（注意：这一步等宝塔面板的Nginx安装完成后再执行）
+
+curl -L https://raw.githubusercontent.com/naiba/nezha/master/script/install.sh  -o nezha.sh && chmod +x nezha.sh && sudo ./nezha.sh
+Copy
+这一步如果执行不了，先执行下面命令，安装依赖包，然后再执行上面的命令
+apt install curl -y
+Copy
+分别填入Client ID、客户端密钥、github账号（这里要注意不是登录账号，是昵称）、自定义一个站点标题，其他的保存默认即可
+面板管理命令
+./nezha.sh
+Copy
+7、配置反向代理
+
+点击添加站点——输入前面解析好的域名——点击提交——点击会议（中间那个）——点击SSL——勾选对应的域名——点击申请——成功后，打开强制HTTPS
+点击反向代理——自定义一个代理名称——在目标网址中输入：http://127.0.0.1——点击提交——点击会议——把里面的内容全部删掉——复制下面的代码粘贴上去——点击保存即可
+#PROXY-START/
+location / {
+    proxy_pass http://127.0.0.1:8008;
+    proxy_set_header Host $http_host;
+    proxy_set_header      Upgrade $http_upgrade;
+}
+location /ws {
+    proxy_pass http://127.0.0.1:8008;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "Upgrade";
+    proxy_set_header Host $http_host;
+}
+location /terminal {
+    proxy_pass http://127.0.0.1:8008;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "Upgrade";
+    proxy_set_header Host $http_host;
+}
+#PROXY-END/
+Copy
+8、新建一个服务器：点击主机——点击添加服务器——名称：自定义——点击添加即可——然后它会生成一个Agent密钥
+
+9、在需监控的服务器上安装Agent（注意：如果要添加本机，需要多解析一条域名）
+
+输入安装命令——然后选择8，安装监控Agent——输入前面解析的域名——把Agent密钥粘贴过来
+curl -L https://raw.githubusercontent.com/naiba/nezha/master/script/install.sh  -o nezha.sh && chmod +x nezha.sh && sudo ./nezha.sh
